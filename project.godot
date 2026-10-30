@@ -12,7 +12,7 @@ config_version=5
 
 config/name="#1"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://жопа23/icon.svg"
+config/icon="res://жопа21/icon.svg"
 
 [display]
 
