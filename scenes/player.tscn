@@ -1,0 +1,107 @@
+[gd_scene format=3 uid="uid://bsxd1okq1758v"]
+
+[sub_resource type="GDScript" id="GDScript_u8vuu"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nyyim"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="GDScript" id="GDScript_3vyb7"]
+script/source = "
+class_name GroundSensor
+extends Area3D
+
+var bodies: Array[PhysicsBody3D] = []
+
+
+func _ready() -> void:
+	monitoring = true
+	monitorable = false
+	collision_layer = 0
+	collision_mask = 1
+
+	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
+
+
+func _physics_process(_delta: float) -> void:
+	for i in range(bodies.size() - 1, -1, -1):
+		var body := bodies[i]
+
+		if not is_instance_valid(body) or not body.is_inside_tree():
+			bodies.remove_at(i)
+
+
+func is_grounded() -> bool:
+	return not bodies.is_empty()
+
+
+func get_current_surface() -> GroundSurface:
+	for i in range(bodies.size() - 1, -1, -1):
+		var body := bodies[i]
+
+		if is_instance_valid(body):
+			var surface := body.get_node_or_null(\"GroundSurface\") as GroundSurface
+
+			if surface != null:
+				return surface
+
+	return null
+
+
+func _on_body_entered(body: Node3D) -> void:
+	if body is PhysicsBody3D:
+		var physics_body := body as PhysicsBody3D
+
+		if not bodies.has(physics_body):
+			bodies.append(physics_body)
+
+
+func _on_body_exited(body: Node3D) -> void:
+	if body is PhysicsBody3D:
+		bodies.erase(body)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cyyb3"]
+size = Vector3(0.8, 0.26, 0.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hmhc3"]
+size = Vector3(0.5, 0.22, 0.5)
+
+[node name="Bill" type="RigidBody3D" unique_id=257858358]
+can_sleep = false
+lock_rotation = true
+continuous_cd = true
+script = SubResource("GDScript_u8vuu")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1958078832]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_nyyim")
+debug_color = Color(1, 0.50980395, 0, 1)
+
+[node name="GroundCheck" type="Area3D" parent="." unique_id=978151962]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+script = SubResource("GDScript_3vyb7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GroundCheck" unique_id=1522745258]
+shape = SubResource("BoxShape3D_cyyb3")
+
+[node name="SlopeCheck" type="Area3D" parent="." unique_id=886285893]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0, 0)
+script = SubResource("GDScript_3vyb7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SlopeCheck" unique_id=965429190]
+shape = SubResource("BoxShape3D_hmhc3")
+
+[node name="Head" type="Node3D" parent="." unique_id=280742879]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="PitchPivot" type="Node3D" parent="Head" unique_id=1163577831]
+
+[node name="Camera3D" type="Camera3D" parent="Head/PitchPivot" unique_id=1521841954]
+current = true
+
+[node name="StompRayCast" type="RayCast3D" parent="." unique_id=919218844]
+target_position = Vector3(0, -1.5, 0)
+
+[node name="RayCast3D" type="RayCast3D" parent="." unique_id=1680495420]

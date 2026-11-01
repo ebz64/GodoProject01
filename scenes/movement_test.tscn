@@ -1,0 +1,269 @@
+[gd_scene format=3 uid="uid://d2y002rfgaki"]
+
+[ext_resource type="PackedScene" uid="uid://bsxd1okq1758v" path="res://scenes/player.tscn" id="1_nyyim"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_arena"]
+sky_top_color = Color(0.28, 0.42, 0.62, 1)
+sky_horizon_color = Color(0.68, 0.72, 0.76, 1)
+ground_bottom_color = Color(0.12, 0.13, 0.15, 1)
+ground_horizon_color = Color(0.62, 0.65, 0.68, 1)
+
+[sub_resource type="Sky" id="Sky_arena"]
+sky_material = SubResource("ProceduralSkyMaterial_arena")
+
+[sub_resource type="Environment" id="Environment_arena"]
+background_mode = 2
+sky = SubResource("Sky_arena")
+ambient_light_source = 2
+ambient_light_color = Color(0.7, 0.74, 0.8, 1)
+ambient_light_energy = 0.5
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="MatFloor"]
+albedo_color = Color(0.18, 0.2, 0.22, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="MatShaft"]
+albedo_color = Color(0.16, 0.24, 0.3, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="MatBounce"]
+albedo_color = Color(0.86, 0.38, 0.16, 1)
+roughness = 0.45
+emission_enabled = true
+emission = Color(0.7, 0.22, 0.05, 1)
+emission_energy_multiplier = 0.35
+
+[sub_resource type="StandardMaterial3D" id="MatNorth"]
+albedo_color = Color(0.22, 0.62, 0.38, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="MatPlatform"]
+albedo_color = Color(0.32, 0.48, 0.58, 1)
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="MatHigh"]
+albedo_color = Color(0.42, 0.34, 0.62, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="MatWall"]
+albedo_color = Color(0.55, 0.5, 0.42, 1)
+roughness = 0.8
+
+[sub_resource type="GDScript" id="GDScript_debug"]
+script/source = "
+extends Label
+
+@export var player: RigidBody3D
+
+func _process(_delta: float) -> void:
+	if not is_instance_valid(player):
+		text = \"Player not assigned\"
+		return
+
+	var velocity := player.linear_velocity
+
+	var horizontal_speed := Vector2(
+		velocity.x,
+		velocity.z
+	).length()
+
+	var total_speed := velocity.length()
+
+	text = \"Horizontal: %.2f m/s\\nVertical: %.2f m/s\\nTotal: %.2f m/s\" % [
+		horizontal_speed,
+		velocity.y,
+		total_speed
+	]
+"
+
+[node name="MovementTest" type="Node3D" unique_id=1650726622]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=610349637]
+environment = SubResource("Environment_arena")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=910412742]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 32, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 180.0
+
+[node name="ShaftLightUpper" type="OmniLight3D" parent="." unique_id=1062108554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -8, 0)
+light_color = Color(0.75, 0.85, 1, 1)
+light_energy = 2.4
+omni_range = 28.0
+
+[node name="ShaftLightLower" type="OmniLight3D" parent="." unique_id=1286577251]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -42, 0)
+light_color = Color(1, 0.55, 0.3, 1)
+light_energy = 2.8
+omni_range = 22.0
+
+[node name="Geometry" type="CSGCombiner3D" parent="." unique_id=179572699]
+use_collision = true
+collision_layer = 5
+collision_mask = 0
+
+[node name="Floor" type="CSGBox3D" parent="Geometry" unique_id=86641916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+size = Vector3(120, 1, 120)
+material = SubResource("MatFloor")
+
+[node name="ShaftHole" type="CSGBox3D" parent="Geometry" unique_id=2010909701]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 0)
+operation = 2
+size = Vector3(12, 4, 12)
+
+[node name="ShaftWallPosZ" type="CSGBox3D" parent="Geometry" unique_id=1818602302]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -24.5, 7)
+size = Vector3(16, 51, 2)
+material = SubResource("MatShaft")
+
+[node name="ShaftWallNegZ" type="CSGBox3D" parent="Geometry" unique_id=1974775574]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -24.5, -7)
+size = Vector3(16, 51, 2)
+material = SubResource("MatShaft")
+
+[node name="ShaftWallPosX" type="CSGBox3D" parent="Geometry" unique_id=1935555600]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, -24.5, 0)
+size = Vector3(2, 51, 12)
+material = SubResource("MatShaft")
+
+[node name="ShaftWallNegX" type="CSGBox3D" parent="Geometry" unique_id=585494183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, -24.5, 0)
+size = Vector3(2, 51, 12)
+material = SubResource("MatShaft")
+
+[node name="ShaftBottomBounce" type="CSGBox3D" parent="Geometry" unique_id=939361455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -49.5, 0)
+size = Vector3(12, 1, 12)
+material = SubResource("MatBounce")
+
+[node name="ShaftMidBounceA" type="CSGBox3D" parent="Geometry" unique_id=973194417]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -16, 4.4)
+size = Vector3(5, 0.6, 3)
+material = SubResource("MatBounce")
+
+[node name="ShaftMidBounceB" type="CSGBox3D" parent="Geometry" unique_id=160063994]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -32, -4.4)
+size = Vector3(5, 0.6, 3)
+material = SubResource("MatBounce")
+
+[node name="NorthMarker" type="CSGBox3D" parent="Geometry" unique_id=1781009313]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -56)
+size = Vector3(10, 0.5, 2)
+material = SubResource("MatNorth")
+
+[node name="JumpPadLow" type="CSGBox3D" parent="Geometry" unique_id=822597374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -8)
+size = Vector3(5, 1.2, 5)
+material = SubResource("MatPlatform")
+
+[node name="JumpPadMid" type="CSGBox3D" parent="Geometry" unique_id=1804676976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.2, -14)
+size = Vector3(5, 2.4, 5)
+material = SubResource("MatPlatform")
+
+[node name="JumpPadHigh" type="CSGBox3D" parent="Geometry" unique_id=1021619385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.8, -20)
+size = Vector3(5, 3.6, 5)
+material = SubResource("MatPlatform")
+
+[node name="JumpPadTaller" type="CSGBox3D" parent="Geometry" unique_id=1837099227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.6, -28)
+size = Vector3(6, 5.2, 6)
+material = SubResource("MatHigh")
+
+[node name="JumpPadHighest" type="CSGBox3D" parent="Geometry" unique_id=1949187930]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, -36)
+size = Vector3(6, 8, 6)
+material = SubResource("MatHigh")
+
+[node name="GapPadA" type="CSGBox3D" parent="Geometry" unique_id=1597103189]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.3, -8)
+size = Vector3(4, 0.6, 4)
+material = SubResource("MatBounce")
+
+[node name="GapPadB" type="CSGBox3D" parent="Geometry" unique_id=373702765]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 3.3, -16)
+size = Vector3(3.6, 0.6, 3.6)
+material = SubResource("MatBounce")
+
+[node name="GapPadC" type="CSGBox3D" parent="Geometry" unique_id=881594481]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7.3, -16)
+size = Vector3(3.6, 0.6, 3.6)
+material = SubResource("MatBounce")
+
+[node name="GapPadD" type="CSGBox3D" parent="Geometry" unique_id=1472758853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 11.3, -16)
+size = Vector3(3.6, 0.6, 3.6)
+material = SubResource("MatBounce")
+
+[node name="DropTowerPole" type="CSGBox3D" parent="Geometry" unique_id=357328786]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 10, 22)
+size = Vector3(1.6, 20, 1.6)
+material = SubResource("MatHigh")
+
+[node name="DropTowerDeck" type="CSGBox3D" parent="Geometry" unique_id=343147421]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 20.3, 22)
+size = Vector3(8, 0.6, 8)
+material = SubResource("MatBounce")
+
+[node name="CorridorWallLeft" type="CSGBox3D" parent="Geometry" unique_id=984107591]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 3, 8)
+size = Vector3(1, 6, 24)
+material = SubResource("MatWall")
+
+[node name="CorridorWallRight" type="CSGBox3D" parent="Geometry" unique_id=1857723379]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3, 8)
+size = Vector3(1, 6, 24)
+material = SubResource("MatWall")
+
+[node name="LongSlideWall" type="CSGBox3D" parent="Geometry" unique_id=773935730]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 18)
+size = Vector3(1, 8, 30)
+material = SubResource("MatWall")
+
+[node name="CornerWallA" type="CSGBox3D" parent="Geometry" unique_id=372680348]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, 22)
+size = Vector3(14, 6, 1)
+material = SubResource("MatWall")
+
+[node name="CornerWallB" type="CSGBox3D" parent="Geometry" unique_id=1371720148]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 3, 16)
+size = Vector3(1, 6, 13)
+material = SubResource("MatWall")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=376602199]
+
+[node name="Crosshair" type="Label" parent="HUD" unique_id=15501287]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -8.0
+offset_top = -12.0
+offset_right = 8.0
+offset_bottom = 12.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.7)
+theme_override_font_sizes/font_size = 18
+text = "+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Debug" type="Label" parent="HUD" unique_id=868055990 node_paths=PackedStringArray("player")]
+offset_left = 16.0
+offset_top = 170.0
+offset_right = 280.0
+offset_bottom = 340.0
+theme_override_colors/font_color = Color(1, 0.92, 0.45, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "SPD: 0"
+script = SubResource("GDScript_debug")
+player = NodePath("../Bill")
+
+[node name="Bill" parent="HUD" unique_id=1797172854 instance=ExtResource("1_nyyim")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.689602, 3.5747375, -27.923386)
